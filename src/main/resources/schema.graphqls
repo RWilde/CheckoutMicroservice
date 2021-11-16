@@ -1,0 +1,57 @@
+type Query {
+    carts: [Cart!]!
+    cart(id: String): Cart!
+#    getItems(cardId: String): [Item!]!
+}
+
+type Mutation {
+    ######## Cart ###########
+    createCart(userId: String, name: String): Boolean!
+    emptyCart(cartId: String): Boolean!
+    deleteCart(cartId: String): Boolean!
+    updateCare(cartId: String, name: String): Boolean!
+
+    ######## Items ###########
+    addItem(cartId: String, productId: String, quantity: Int): Boolean!
+    deleteItem(cartId: String, productId: String): Cart!
+    updateItem(cartId: String, productId: String, quantity: Int): Cart!
+}
+
+
+type Cart {
+    id: ID!
+    name: String!
+    userId: String!
+    items: [Item!]!
+
+    #    productId: [String!]!
+#    isActive: Boolean!
+#    isAbandoned: Boolean!
+#    createTime: String!
+#    updateTime: String!
+}
+
+type Item {
+    id: ID!
+    quantity: Int!
+    product: Product!
+}
+
+type Product {
+    id: ID!
+    title: String!
+    price: Float!
+    description: String
+    sku: String!
+}
+
+#type Mutations {
+#        createCart(input: CreateCartInput!): Cart!
+#        updateCart(input: UpdateCartInput!): Cart!
+#        deleteCart(input: DeleteCartInput!): Cart!
+#        emptyCart(input: EmptyCartInput!): Cart!
+#        addItem(input: AddToCartInput!): Cart!
+#        updateItem(input: UpdateCartItemInput!): Cart!
+#        removeItem(input: RemoveCartItemInput!): Cart!
+#
+#}
