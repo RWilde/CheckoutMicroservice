@@ -2,72 +2,55 @@ package poc.graphql.resolvers;
 
 
 import graphql.kickstart.tools.GraphQLMutationResolver;
+import graphql.schema.DataFetchingEnvironment;
 import poc.graphql.models.Cart;
-import poc.graphql.models.Item;
-import poc.graphql.models.Product;
-import poc.graphql.repository.CartRepository;
-import poc.graphql.repository.DummyCartRepository;
+import poc.graphql.models.Purpose;
+import poc.graphql.models.input.CartInput;
+import poc.graphql.models.input.UpdateCartInput;
+import poc.graphql.repository.Repository;
 
 import javax.inject.Singleton;
-import java.util.List;
+import java.util.Date;
 
 @Singleton
 public class CartMutationResolver implements GraphQLMutationResolver {
 
-private final CartRepository cartRepository;
+    private final Repository cartRepository;
 
-    public CartMutationResolver(CartRepository cartsRepository) {
+
+    public CartMutationResolver(Repository cartsRepository) {
         this.cartRepository = cartsRepository;
     }
 
-    public boolean createCart(String userId, String name){
-        return cartRepository.save(new Cart(name + userId, name, userId));
+    public Cart createCart(CartInput cart, DataFetchingEnvironment dataFetchingEnvironment) {
+        var context = dataFetchingEnvironment.getGraphQlContext();
+        if (cart != null) {
+            return cartRepository.save(new Cart(cart.getName(), cart.getPurpose(), cart.getItems()));
+        } else {
+            return cartRepository.save(new Cart("default", Purpose.CART));
+        }
     }
 
-    public Boolean emptyCart(String cartId){
-        Cart cart = cartRepository.findById(cartId);
-        List<Item> items = cart.getItems();
-        items.clear();
-        return cartRepository.save(cart);
-    }
-
-    public Boolean deleteCart(String cartId){
+    public Boolean deleteCart(String cartId) {
         return cartRepository.deleteCart(cartId);
     }
 
-    public Boolean updateCare(String cartId, String name){
-        Cart cart = cartRepository.findById(cartId);
-        cart.setName(name);
-        return cartRepository.save(cart);
-    }
+    public Cart updateCart(
+            UpdateCartInput cart) {
+        var cartToUpdate = cartRepository.findById(cart.getId());
 
-    public boolean addItem(String cartId, String productId, Integer quantity){
-        Cart cart = cartRepository.findById(cartId);
-        Item item = cart.getItems().stream()
-                .filter(p -> p.getProduct().getId().equals(productId))
-                .findFirst()
-                .orElseGet(() -> {
-                    Product product = new Product(productId, "dummy", 29.00F, "dummy", "ST125");
-                    Item newItem = new Item(1, product);
-                    cart.getItems().add(newItem);
-                    return newItem;
-                });
-        item.setQuantity(item.getQuantity() + quantity);
-        return cartRepository.save(cart);
-    }
+        if (cartToUpdate == null) return null;
 
-    public Cart deleteItem(String cartId, String productId){
-        Cart cart = cartRepository.findById(cartId);
-        cart.getItems().removeIf(item -> item.getProduct().getId().equals(productId));
-        return cartRepository.findById(cartId);
-    }
+        if (cart.getName() != null)
+            cartToUpdate.setName(cart.getName());
 
-    public Cart updateItem(String cartId, String productId, Integer quantity){
-        Cart cart = cartRepository.findById(cartId);
+        if (cart.getItems() != null)
+            cartToUpdate.setItems(cart.getItems());
 
-        Item updatedItem = cart.getItems().stream().filter(item -> item.getProduct().getId().equals(productId)).findFirst().get();
-        updatedItem.setQuantity(quantity);
+        if (cart.getPurpose() != null)
+            cartToUpdate.setPurpose(cart.getPurpose());
 
-        return cartRepository.findById(cartId);
+        cartToUpdate.setUpdateTime(new Date());
+        return cartRepository.update(cartToUpdate);
     }
 }

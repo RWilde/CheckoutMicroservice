@@ -1,2 +1,3 @@
 
-rootProject.name="shoppingcart"
+rootProject.name="cart-service"
+//include ':app'

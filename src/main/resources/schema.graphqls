@@ -1,57 +1,56 @@
-type Query {
-    carts: [Cart!]!
-    cart(id: String): Cart!
-#    getItems(cardId: String): [Item!]!
+
+
+ type Query {
+    cart(cartId: String): Cart!
+    carts: [Cart]!
 }
 
-type Mutation {
-    ######## Cart ###########
-    createCart(userId: String, name: String): Boolean!
-    emptyCart(cartId: String): Boolean!
+ type Mutation {
+    createCart(cart: CreateCart): Cart
+    updateCart(cart: UpdateCart): Cart!
     deleteCart(cartId: String): Boolean!
-    updateCare(cartId: String, name: String): Boolean!
-
-    ######## Items ###########
-    addItem(cartId: String, productId: String, quantity: Int): Boolean!
-    deleteItem(cartId: String, productId: String): Cart!
-    updateItem(cartId: String, productId: String, quantity: Int): Cart!
 }
 
-
-type Cart {
+ type Cart @key(fields: "id") {
     id: ID!
     name: String!
-    userId: String!
-    items: [Item!]!
-
-    #    productId: [String!]!
-#    isActive: Boolean!
-#    isAbandoned: Boolean!
-#    createTime: String!
-#    updateTime: String!
+    items: [CartItem]!
+    purpose: Purpose!
+    createTime: String!
+    updateTime: String!
+    shareCode: Int!
+     user: User @provides(fields: "id")
 }
 
-type Item {
-    id: ID!
-    quantity: Int!
-    product: Product!
+ type User @key(fields: "id") @extends {
+     id: ID! @external
+     username: String! @external
+     carts: [Cart]!
+ }
+
+enum Purpose {
+    CART, WISHLIST
 }
 
-type Product {
-    id: ID!
-    title: String!
-    price: Float!
-    description: String
-    sku: String!
+input CreateCart {
+    name: String!
+    items: [Item]!
+    purpose: Purpose!
 }
 
-#type Mutations {
-#        createCart(input: CreateCartInput!): Cart!
-#        updateCart(input: UpdateCartInput!): Cart!
-#        deleteCart(input: DeleteCartInput!): Cart!
-#        emptyCart(input: EmptyCartInput!): Cart!
-#        addItem(input: AddToCartInput!): Cart!
-#        updateItem(input: UpdateCartItemInput!): Cart!
-#        removeItem(input: RemoveCartItemInput!): Cart!
-#
-#}
+input UpdateCart {
+    id: String
+    name: String
+    items: [Item]
+    purpose: Purpose
+}
+
+input Item {
+    sku: String
+    quantity: Int
+}
+
+type CartItem {
+    sku: String
+    quantity: Int
+}

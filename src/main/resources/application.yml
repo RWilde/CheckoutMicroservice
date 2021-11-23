@@ -1,6 +1,7 @@
 micronaut:
   application:
-    name: shoppingcart
+    name: cart-service
+    port: 8080
 spring:
   data:
     mongodb:
